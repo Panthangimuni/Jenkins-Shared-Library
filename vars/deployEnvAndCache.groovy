@@ -1,6 +1,6 @@
 def call(String targetPath, String cacheType) {
     def remoteUser = "root"
-    def remoteHost = "13.203.216.208"
+    def remoteHost = "65.2.75.219"
 
     def paths = [
         "frontend": "/var/www-app/frontend",
