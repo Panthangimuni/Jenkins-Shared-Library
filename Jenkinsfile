@@ -17,7 +17,7 @@ pipeline {
     stages {
         stage('Checkout Shared Lib') {
             steps {
-                git branch: 'main',
+                git branch: 'develop',
                     credentialsId: 'your-git-credentials-id',
                     url: 'https://github.com/Panthangimuni/Jenkins-Shared-Library.git'
             }
