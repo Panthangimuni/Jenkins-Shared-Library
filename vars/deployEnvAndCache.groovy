@@ -1,7 +1,7 @@
 def call(String targetApp, String cacheType) {
     def remoteUser = "root"
 
-    // Map all servers with their respective Laravel app paths
+    // Define all servers and their Laravel app directories
     def serverPaths = [
         "15.207.112.21": [
             "frontend": "/var/www-app/frontend",
@@ -23,39 +23,43 @@ def call(String targetApp, String cacheType) {
         ]
     ]
 
-    def selectedPath = null
-    def selectedHost = null
+    def targets = []
 
-    // Look up which server contains the requested app path
-    for (entry in serverPaths) {
-        def host = entry.key
-        def paths = entry.value
-        if (paths.containsKey(targetApp)) {
-            selectedHost = host
-            selectedPath = paths[targetApp]
-            break
+    if (targetApp == 'all') {
+        // Prepare list of all apps across all servers
+        serverPaths.each { host, apps ->
+            apps.each { name, path ->
+                targets << [host: host, path: path, name: name]
+            }
+        }
+    } else {
+        // Find matching path for specific app
+        def found = false
+        serverPaths.each { host, apps ->
+            if (apps.containsKey(targetApp)) {
+                targets << [host: host, path: apps[targetApp], name: targetApp]
+                found = true
+            }
+        }
+        if (!found) {
+            error("Invalid TARGET_PATH: ${targetApp} not found on any server")
         }
     }
 
-    if (!selectedHost || !selectedPath) {
-        error("Invalid TARGET_PATH selection: '${targetApp}' not found on any server.")
-    }
-
-    // Execute Laravel caching logic
-    if (cacheType == 'env') {
-        sh """
-            rsync -avz --exclude='.git' .env ${remoteUser}@${selectedHost}:${selectedPath}/
-            ssh ${remoteUser}@${selectedHost} 'cd ${selectedPath} && php artisan config:cache'
-        """
-    } else if (cacheType in ['config', 'route']) {
-        sh """
-            ssh ${remoteUser}@${selectedHost} 'cd ${selectedPath} && php artisan ${cacheType}:cache'
-        """
-    } else if (cacheType == 'all') {
-        sh """
-            ssh ${remoteUser}@${selectedHost} 'cd ${selectedPath} && php artisan config:cache && php artisan route:cache'
-        """
-    } else {
-        error("Invalid CACHE_TYPE value: ${cacheType}")
+    // Loop through all targets and execute based on cacheType
+    targets.each { t ->
+        echo "Executing on ${t.name} at ${t.host}:${t.path} for ${cacheType}"
+        if (cacheType == 'env') {
+            sh """
+                rsync -avz --exclude='.git' .env ${remoteUser}@${t.host}:${t.path}/
+                ssh ${remoteUser}@${t.host} 'cd ${t.path} && php artisan config:cache'
+            """
+        } else if (cacheType in ['config', 'route']) {
+            sh """
+                ssh ${remoteUser}@${t.host} 'cd ${t.path} && php artisan ${cacheType}:cache'
+            """
+        } else {
+            error("Invalid CACHE_TYPE: ${cacheType}")
+        }
     }
 }
