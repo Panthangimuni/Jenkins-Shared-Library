@@ -11,11 +11,19 @@ pipeline {
             'naresh-server', 'ravi-server', 'saravana-server', 'sri-server'
         ], description: 'Select app target (use "all" to apply to all)')
 
-        choice(name: 'CACHE_TYPE', choices: ['env', 'config', 'route'], description: 'Choose cache operation')
+        choice(name: 'CACHE_TYPE', choices: ['env', 'config', 'route'], description: 'Type of deployment/cache operation (only one at a time)')
     }
 
     stages {
-        stage('Run Laravel Deployment') {
+        stage('Checkout Shared Lib') {
+            steps {
+                git branch: 'main',
+                    credentialsId: 'your-git-credentials-id',
+                    url: 'https://github.com/Panthangimuni/Jenkins-Shared-Library.git'
+            }
+        }
+
+        stage('Run Laravel Cache Commands') {
             steps {
                 script {
                     deployEnvAndCache(params.TARGET_PATH, params.CACHE_TYPE)
