@@ -1,19 +1,19 @@
 // vars/serverConfig.groovy
 def getServerPaths() {
     return [
-        "15.207.112.21": [
+        "13.204.76.47": [
             "frontend": "/var/www-app/frontend",
             "backend": "/var/www-app/backend",
             "api-server": "/var/www-app/api-server",
             "report": "/var/www-app/report"
         ],
-        "43.204.216.125": [
+        "13.234.66.140": [
             "muni-server": "/var/www-muni/muni-server",
             "narayna-server": "/var/www-narayna/narayna-server",
             "ram-server": "/var/www-ram/ram-server",
             "rathnam-server": "/var/www-app/rathnam-server"
         ],
-        "43.204.220.153": [
+        "3.108.250.203": [
             "naresh-server": "/var/www-php/naresh-server",
             "ravi-server": "/var/www-php/ravi-server",
             "saravana-server": "/var/www-app/saravana-server",
